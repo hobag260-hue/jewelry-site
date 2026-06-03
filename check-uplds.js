@@ -1,0 +1,14 @@
+﻿const fs=require('fs');
+const store=JSON.parse(fs.readFileSync('C:/Users/A/Desktop/라이브/首饰网站/data/store.json','utf8'));
+const itemTitles=(store.items||[]).map(x=>(x.title||'').trim()).filter(Boolean);
+const itemSet=new Set(itemTitles);
+const u='C:/Users/A/Desktop/라이브/uplds';
+const entries=fs.readdirSync(u,{withFileTypes:true});
+const dirs=entries.filter(e=>e.isDirectory()).map(e=>e.name.trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b,'ko'));
+const files=entries.filter(e=>e.isFile()).map(e=>e.name);
+const dirSet=new Set(dirs);
+const inUpldsNotProducts=dirs.filter(n=>!itemSet.has(n));
+const productsNotInUplds=itemTitles.filter(n=>!dirSet.has(n));
+const dupDirs=[...dirs.reduce((m,n)=>(m.set(n,(m.get(n)||0)+1),m),new Map())].filter(([n,c])=>c>1);
+const dupProducts=[...itemTitles.reduce((m,n)=>(m.set(n,(m.get(n)||0)+1),m),new Map())].filter(([n,c])=>c>1);
+console.log(JSON.stringify({productCount:itemTitles.length,upldsTotalEntries:entries.length,upldsFolders:dirs.length,upldsFiles:files.length,files,foldersInUpldsButNotProductsCount:inUpldsNotProducts.length,foldersInUpldsButNotProducts:inUpldsNotProducts,productsButNoSameFolderInUpldsCount:productsNotInUplds.length,productsButNoSameFolderInUplds:productsNotInUplds.slice(0,80),duplicateFolderNames:dupDirs,duplicateProductTitles:dupProducts},null,2));

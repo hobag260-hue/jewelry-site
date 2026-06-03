@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Chrome Hearts logo">
+  <rect width="1600" height="900" fill="#000000"/>
+  <g fill="none" stroke="#ffffff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="800" cy="385" r="175"/>
+    <path d="M800 240c40 65 40 225 0 290M655 385c65-40 225-40 290 0"/>
+    <path d="M800 285c40 0 72 32 72 72s-32 72-72 72-72-32-72-72 32-72 72-72z"/>
+    <path d="M640 535c-58 58-88 104-90 145M960 535c58 58 88 104 90 145"/>
+    <path d="M555 675h490"/>
+  </g>
+  <text x="800" y="215" text-anchor="middle" fill="#ffffff" font-family="Georgia, 'Times New Roman', serif" font-size="112" font-weight="700" letter-spacing="6">CHROME HEARTS</text>
+  <text x="800" y="755" text-anchor="middle" fill="#ffffff" font-family="Georgia, 'Times New Roman', serif" font-size="86" font-weight="700" letter-spacing="4">CHROME HEARTS</text>
+</svg>

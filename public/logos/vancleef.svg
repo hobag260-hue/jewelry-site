@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Van Cleef & Arpels logo">
+  <rect width="1600" height="900" fill="#ffffff"/>
+  <g fill="none" stroke="#111111" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="800,250 1090,390 800,530 510,390"/>
+    <path d="M800 295v180M766 472h68M785 318c38 50 38 105 0 155M815 318c-38 50-38 105 0 155"/>
+  </g>
+  <text x="690" y="420" text-anchor="middle" fill="#111111" font-family="Arial, Helvetica, sans-serif" font-size="90" font-weight="700">VC</text>
+  <text x="910" y="420" text-anchor="middle" fill="#111111" font-family="Arial, Helvetica, sans-serif" font-size="90" font-weight="700">A</text>
+  <text x="800" y="655" text-anchor="middle" fill="#111111" font-family="Georgia, 'Times New Roman', serif" font-size="155" letter-spacing="6">Van Cleef &amp; Arpels</text>
+</svg>

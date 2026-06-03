@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Fred logo">
+  <rect width="1600" height="900" fill="#ffffff"/>
+  <text x="800" y="560" text-anchor="middle" fill="#020b3b" font-family="Georgia, 'Times New Roman', serif" font-size="410" font-weight="900" letter-spacing="18">FRED</text>
+  <path d="M720 610c120 80 260 70 380-40" fill="none" stroke="#020b3b" stroke-width="28" stroke-linecap="round"/>
+</svg>

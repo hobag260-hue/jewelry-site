@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>관리자 - 주얼리 쇼케이스</title>
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+<body class="admin-page">
+  <main class="admin-wrap">
+    <div class="admin-head">
+      <div>
+        <p class="eyebrow">관리자</p>
+        <h1>주얼리 이미지 업로드 및 분류</h1>
+      </div>
+      <div class="admin-head-actions">
+        <form class="top-search" action="/admin" method="get">
+          <input type="hidden" name="category" value="<%= category %>">
+          <input type="hidden" name="brand" value="<%= brand %>">
+          <input name="q" value="<%= q %>" placeholder="상품 검색">
+          <button>검색</button>
+        </form>
+        <form action="/admin/logout" method="post" class="logout-form">
+          <button type="submit" class="ghost-button">退出登录</button>
+        </form>
+        <a href="/">메인으로 돌아가기</a>
+      </div>
+    </div>
+
+    <% if (message) { %><div class="notice"><%= message %></div><% } %>
+
+    <section class="panel">
+      <h2>새 카테고리 추가</h2>
+      <form action="/admin/category" method="post" class="inline-form">
+        <input name="name" placeholder="예: 브로치, 진주, 웨딩 컬렉션" required>
+        <button>카테고리 저장</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>브랜드 추가</h2>
+      <form action="/admin/subcategory" method="post" class="inline-form">
+        <select name="category" required>
+          <% store.categories.forEach(cat => { %><option value="<%= cat %>"><%= cat %></option><% }) %>
+        </select>
+        <input name="brand" placeholder="예: 반클리프" required>
+        <button>브랜드 저장</button>
+      </form>
+      <div class="brand-map">
+        <% store.categories.forEach(cat => { %>
+          <div>
+            <strong><%= cat %></strong>
+            <p><%= (store.subcategories[cat] || []).join(' · ') %></p>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>라이브 링크 설정</h2>
+      <form action="/admin/live-link" method="post" class="stack-form">
+        <label>라이브 링크 URL<input name="liveLink" value="<%= store.liveLink || '' %>" placeholder="예: https://example.com/live"></label>
+        <button>라이브 링크 저장</button>
+      </form>
+      <p class="muted">상단 메뉴의 ‘라이브’ 버튼이 이 주소로 이동합니다.</p>
+    </section>
+
+    <section class="panel">
+      <h2>메인 배너 이미지</h2>
+      <form action="/admin/banner" method="post" enctype="multipart/form-data" class="stack-form">
+        <label>배너 이미지 6장<input type="file" name="banners" accept="image/*" multiple></label>
+        <button>배너 저장</button>
+      </form>
+      <div class="banner-preview-list">
+        <% (store.banners || []).forEach(banner => { %><img src="<%= banner %>" alt="배너 이미지"><% }) %>
+        <% if (!(store.banners || []).length) { %><p class="muted">등록된 배너가 없습니다. 없으면 상품 대표 이미지가 자동으로 사용됩니다.</p><% } %>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>주얼리 업로드</h2>
+      <form action="/admin/item" method="post" enctype="multipart/form-data" class="stack-form">
+        <label>이름<input name="title" placeholder="예: 달빛 진주 목걸이" required></label>
+        <label>카테고리
+          <select name="category" id="categorySelect" required>
+            <% store.categories.forEach(cat => { %><option value="<%= cat %>"><%= cat %></option><% }) %>
+          </select>
+        </label>
+        <label>브랜드
+          <select name="brand" id="brandSelect" required></select>
+        </label>
+        <label>설명<textarea name="description" rows="3" placeholder="소재, 스타일, 어울리는 장면 등을 입력하세요"></textarea></label>
+        <label class="single-checkbox"><input type="checkbox" name="pinned"> 首页置顶显示</label>
+        <label>대표 이미지<input type="file" name="coverImage" accept="image/*" required></label>
+        <label>상세 이미지 여러 장<input type="file" name="detailImages" accept="image/*" multiple></label>
+        <button>쇼케이스에 업로드</button>
+      </form>
+    </section>
+
+    <section class="panel" id="uploaded-images">
+      <h2>업로드된 이미지</h2>
+      <p class="muted">총 <%= adminTotalItems %>개 · 페이지당 10개</p>
+      <form class="admin-filter-form" action="/admin#uploaded-images" method="get">
+        <input name="q" value="<%= q %>" placeholder="상품명 / 브랜드 검색">
+        <select name="category" id="adminCategoryFilter">
+          <option value="전체">전체 카테고리</option>
+          <% store.categories.forEach(cat => { %><option value="<%= cat %>" <%= category === cat ? 'selected' : '' %>><%= cat %></option><% }) %>
+        </select>
+        <select name="brand" id="adminBrandFilter">
+          <option value="전체">전체 브랜드</option>
+        </select>
+        <button>찾기</button>
+        <a class="clear-link" href="/admin#uploaded-images">초기화</a>
+      </form>
+      <div class="admin-list">
+        <% adminItems.forEach(item => { %>
+          <div class="admin-item">
+            <img src="<%= item.coverImage || item.image %>" alt="<%= item.title %>">
+            <div>
+              <strong><%= item.title %></strong>
+              <p><%= item.category %> · <%= item.brand || '브랜드 없음' %></p>
+              <% if (item.pinned) { %><p class="pin-badge">首页置顶</p><% } %>
+              <p class="muted">상세 이미지 <%= (item.detailImages || []).length %>장</p>
+            </div>
+            <div class="admin-item-actions">
+              <a class="edit-link" href="/admin/edit/<%= item.id %>">수정</a>
+              <form action="/admin/delete/<%= item.id %>" method="post" onsubmit="return confirm('이 상품을 삭제하시겠습니까?')">
+                <button class="danger">삭제</button>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+        <% if (adminItems.length === 0) { %><p class="muted">검색된 상품이 없습니다.</p><% } %>
+      </div>
+
+      <% if (adminTotalPages > 1) { %>
+        <nav class="pagination" aria-label="관리자 상품 페이지 이동">
+          <% for (let p = 1; p <= adminTotalPages; p += 1) { %>
+            <a
+              class="pagination-link <%= p === adminPage ? 'active' : '' %>"
+              href="/admin?category=<%= encodeURIComponent(category) %>&brand=<%= encodeURIComponent(brand) %>&q=<%= encodeURIComponent(q) %>&page=<%= p %>#uploaded-images"
+            ><%= p %></a>
+          <% } %>
+          <% if (adminPage < adminTotalPages) { %>
+            <a
+              class="pagination-next"
+              href="/admin?category=<%= encodeURIComponent(category) %>&brand=<%= encodeURIComponent(brand) %>&q=<%= encodeURIComponent(q) %>&page=<%= adminPage + 1 %>#uploaded-images"
+              aria-label="다음 페이지"
+            >&#187;</a>
+          <% } %>
+        </nav>
+      <% } %>
+    </section>
+  </main>
+
+  <script>
+    const subcategories = <%- JSON.stringify(store.subcategories) %>;
+    const categorySelect = document.getElementById('categorySelect');
+    const brandSelect = document.getElementById('brandSelect');
+    const adminCategoryFilter = document.getElementById('adminCategoryFilter');
+    const adminBrandFilter = document.getElementById('adminBrandFilter');
+    const selectedAdminBrand = <%- JSON.stringify(brand) %>;
+
+    function renderBrands() {
+      const brands = subcategories[categorySelect.value] || [];
+      brandSelect.innerHTML = brands.map(brand => `<option value="${brand}">${brand}</option>`).join('');
+    }
+
+    function renderAdminBrandFilter() {
+      const selectedCategory = adminCategoryFilter.value;
+      const brands = selectedCategory === '전체'
+        ? [...new Set(Object.values(subcategories).flat())]
+        : (subcategories[selectedCategory] || []);
+      adminBrandFilter.innerHTML = '<option value="전체">전체 브랜드</option>' + brands.map(brand => `<option value="${brand}" ${selectedAdminBrand === brand ? 'selected' : ''}>${brand}</option>`).join('');
+    }
+
+    categorySelect.addEventListener('change', renderBrands);
+    adminCategoryFilter.addEventListener('change', renderAdminBrandFilter);
+    renderBrands();
+    renderAdminBrandFilter();
+  </script>
+</body>
+</html>

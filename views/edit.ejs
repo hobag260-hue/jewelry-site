@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>상품 수정 - 주얼리 쇼케이스</title>
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+<body class="admin-page">
+  <main class="admin-wrap">
+    <div class="admin-head">
+      <div>
+        <p class="eyebrow">관리자</p>
+        <h1>상품 수정</h1>
+      </div>
+      <a href="/admin">관리자로 돌아가기</a>
+    </div>
+
+    <% if (message) { %><div class="notice"><%= message %></div><% } %>
+
+    <section class="panel">
+      <form action="/admin/edit/<%= item.id %>" method="post" enctype="multipart/form-data" class="stack-form">
+        <label>이름<input name="title" value="<%= item.title %>" required></label>
+        <label>카테고리
+          <select name="category" id="editCategorySelect" required>
+            <% store.categories.forEach(cat => { %><option value="<%= cat %>" <%= item.category === cat ? 'selected' : '' %>><%= cat %></option><% }) %>
+          </select>
+        </label>
+        <label>브랜드
+          <select name="brand" id="editBrandSelect" required></select>
+        </label>
+        <label>설명<textarea name="description" rows="5"><%= item.description || '' %></textarea></label>
+        <label class="single-checkbox"><input type="checkbox" name="pinned" <%= item.pinned ? 'checked' : '' %>> 首页置顶显示</label>
+        <div class="current-images">
+          <h2>현재 대표 이미지</h2>
+          <img src="<%= item.coverImage || item.image %>" alt="<%= item.title %>">
+        </div>
+        <label>대표 이미지 교체<input type="file" name="coverImage" accept="image/*"></label>
+        <label>상세 이미지 추가<input type="file" name="detailImages" accept="image/*" multiple></label>
+        <button>수정 저장</button>
+      </form>
+    </section>
+
+    <section class="panel" id="detail-images">
+      <h2>상세 이미지 관리</h2>
+      <div class="edit-detail-list">
+        <% (item.detailImages || []).forEach((image, index) => { %>
+          <div>
+            <img src="<%= image %>" alt="상세 이미지">
+            <div class="image-order-actions">
+              <form action="/admin/edit/<%= item.id %>/move-detail" method="post">
+                <input type="hidden" name="image" value="<%= image %>">
+                <input type="hidden" name="direction" value="up">
+                <button <%= index === 0 ? 'disabled' : '' %>>위로</button>
+              </form>
+              <form action="/admin/edit/<%= item.id %>/move-detail" method="post">
+                <input type="hidden" name="image" value="<%= image %>">
+                <input type="hidden" name="direction" value="down">
+                <button <%= index === (item.detailImages || []).length - 1 ? 'disabled' : '' %>>아래로</button>
+              </form>
+              <form action="/admin/edit/<%= item.id %>/delete-detail" method="post" onsubmit="return confirm('이 상세 이미지를 삭제하시겠습니까?')">
+                <input type="hidden" name="image" value="<%= image %>">
+                <button class="danger">삭제</button>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+        <% if ((item.detailImages || []).length === 0) { %><p class="muted">상세 이미지가 없습니다.</p><% } %>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const subcategories = <%- JSON.stringify(store.subcategories) %>;
+    const selectedBrand = <%- JSON.stringify(item.brand) %>;
+    const categorySelect = document.getElementById('editCategorySelect');
+    const brandSelect = document.getElementById('editBrandSelect');
+
+    function renderBrands() {
+      const brands = subcategories[categorySelect.value] || [];
+      brandSelect.innerHTML = brands.map(brand => `<option value="${brand}" ${selectedBrand === brand ? 'selected' : ''}>${brand}</option>`).join('');
+    }
+
+    categorySelect.addEventListener('change', renderBrands);
+    renderBrands();
+
+    const scrollKey = `edit-scroll-${location.pathname}`;
+    const savedScroll = sessionStorage.getItem(scrollKey);
+    if (savedScroll !== null) {
+      const targetScroll = Number(savedScroll);
+      sessionStorage.removeItem(scrollKey);
+      const restoreScroll = () => window.scrollTo(0, targetScroll);
+      requestAnimationFrame(restoreScroll);
+      window.addEventListener('load', () => {
+        restoreScroll();
+        setTimeout(restoreScroll, 80);
+        setTimeout(restoreScroll, 220);
+        setTimeout(restoreScroll, 500);
+      });
+    }
+
+    document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', () => {
+        sessionStorage.setItem(scrollKey, String(window.scrollY));
+      });
+    });
+
+    document.querySelectorAll('.image-order-actions button').forEach(button => {
+      button.addEventListener('click', () => {
+        sessionStorage.setItem(scrollKey, String(window.scrollY));
+      });
+    });
+  </script>
+</body>
+</html>
