@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>관리자 로그인 - 주얼리 쇼케이스</title>
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+<body class="admin-page admin-login-page">
+  <main class="login-wrap">
+    <section class="login-card">
+      <p class="eyebrow">ADMIN</p>
+      <h1>后台登录</h1>
+      <p class="login-subtext">请输入密码后进入商品上传与管理页面。</p>
+      <% if (message) { %><div class="notice"><%= message %></div><% } %>
+      <form action="/admin/login" method="post" class="stack-form login-form">
+        <input type="hidden" name="next" value="<%= next %>">
+        <label>密码<input type="password" name="password" placeholder="Password" required autofocus></label>
+        <button type="submit">登录后台</button>
+      </form>
+      <a class="login-back-link" href="/">返回首页</a>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="KakaoTalk QR dble1">
+  <rect width="240" height="240" rx="18" fill="#fff7df"/>
+  <rect x="18" y="18" width="204" height="204" rx="10" fill="#ffffff"/>
+  <g fill="#333333">
+    <path d="M34 34h54v54H34zM152 34h54v54h-54zM34 152h54v54H34z"/>
+    <path fill="#fff" d="M46 46h30v30H46zM164 46h30v30h-30zM46 164h30v30H46z"/>
+    <path d="M104 34h14v14h-14zM132 34h14v28h-14zM104 62h28v14h-28zM118 90h14v14h-14zM146 90h28v14h-28zM188 104h18v18h-18zM104 118h42v14h-42zM160 118h14v28h-14zM188 132h18v14h-18zM104 146h14v18h-14zM132 146h14v14h-14zM174 160h32v14h-32zM104 188h28v18h-28zM146 174h14v32h-14zM174 188h14v18h-14zM202 188h14v28h-14zM90 104h14v28H90zM62 104h28v14H62zM34 104h14v28H34zM118 174h14v14h-14z"/>
+  </g>
+  <ellipse cx="122" cy="128" rx="34" ry="25" fill="#3a302a"/>
+  <path d="M103 149l-12 19 28-16z" fill="#3a302a"/>
+</svg>

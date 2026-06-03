@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 512" role="img" aria-label="KakaoTalk">
+  <rect width="820" height="512" fill="#fee500"/>
+  <g transform="translate(205 95)">
+    <path fill="#3a1f22" d="M205 0C91.8 0 0 65.8 0 147c0 50.3 35.4 94.7 89.4 121.2l-26.8 99.2c-2.5 9.1 8 16.2 15.5 10.6l116.6-86c3.4.1 6.8.1 10.3.1 113.2 0 205-65.8 205-147S318.2 0 205 0Z"/>
+    <text x="205" y="177" text-anchor="middle" font-family="Arial Rounded MT Bold, Arial, sans-serif" font-size="92" font-weight="900" fill="#fee500" letter-spacing="-5">TALK</text>
+  </g>
+</svg>

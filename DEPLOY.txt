@@ -1,0 +1,25 @@
+Jewelry Site Deployment
+
+1. Upload this project to your server.
+2. In the project folder run:
+   npm install
+3. Copy .env.example to .env and edit these values:
+   - ADMIN_PASSWORD
+   - ADMIN_COOKIE_SECRET
+4. Start the site:
+   node server.js
+
+Recommended production run:
+   npm install -g pm2
+   pm2 start server.js --name jewelry-site
+   pm2 save
+
+If using nginx, reverse proxy your domain to:
+   http://127.0.0.1:3000
+
+Important persistent data:
+- data/store.json
+- public/uploads/
+
+Admin login path:
+- /admin
