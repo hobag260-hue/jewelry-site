@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data', 'store.json');
+const SEED_FILE = path.join(__dirname, 'seed-data', 'store.json');
 const UPLOAD_DIR = path.join(__dirname, 'public', 'uploads');
 const DEFAULT_CATEGORIES = ['목걸이', '팔찌', '귀걸이', '반지'];
 const DEFAULT_BRANDS = ['반클리프', '불가리', '까르띠에', '샤넬', '디올', '티파니', '프레드', '에르메스', '루이비통', '쇼메', '부쉐론', '크롬하츠'];
@@ -31,6 +32,33 @@ const BRAND_LOGOS = {
 
 function defaultSubcategories() {
   return Object.fromEntries(DEFAULT_CATEGORIES.map(category => [category, [...DEFAULT_BRANDS]]));
+}
+
+function createDefaultStore() {
+  return {
+    categories: [...DEFAULT_CATEGORIES],
+    subcategories: defaultSubcategories(),
+    items: []
+  };
+}
+
+function readJsonFile(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
+}
+
+function loadSeedStore() {
+  if (!fs.existsSync(SEED_FILE)) return null;
+  try {
+    return readJsonFile(SEED_FILE);
+  } catch (_error) {
+    return null;
+  }
+}
+
+function shouldRestoreSeed(store) {
+  const items = Array.isArray(store.items) ? store.items.length : 0;
+  const banners = Array.isArray(store.banners) ? store.banners.length : 0;
+  return items === 0 && banners === 0 && !store.liveLink;
 }
 
 function normalizeStore(store) {
@@ -60,14 +88,34 @@ function normalizeStore(store) {
 function ensureStore() {
   if (!fs.existsSync(DATA_FILE)) {
     fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ categories: [...DEFAULT_CATEGORIES], subcategories: defaultSubcategories(), items: [] }, null, 2));
+    const seedStore = loadSeedStore();
+    const initialStore = seedStore && Array.isArray(seedStore.items) && seedStore.items.length
+      ? seedStore
+      : createDefaultStore();
+    fs.writeFileSync(DATA_FILE, JSON.stringify(initialStore, null, 2));
   }
 }
 
 function loadStore() {
   ensureStore();
-  const store = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8').replace(/^\uFEFF/, ''));
+  let store;
+  try {
+    store = readJsonFile(DATA_FILE);
+  } catch (_error) {
+    const seedStore = loadSeedStore();
+    store = seedStore || createDefaultStore();
+    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+    fs.writeFileSync(DATA_FILE, JSON.stringify(store, null, 2));
+  }
   const normalized = normalizeStore(store);
+  if (shouldRestoreSeed(normalized)) {
+    const seedStore = loadSeedStore();
+    if (seedStore && Array.isArray(seedStore.items) && seedStore.items.length) {
+      const restored = normalizeStore(seedStore);
+      saveStore(restored);
+      return restored;
+    }
+  }
   saveStore(normalized);
   return normalized;
 }
