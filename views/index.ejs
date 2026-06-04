@@ -77,7 +77,7 @@
     <section class="grid <%= section !== '전체' ? 'featured-grid' : '' %>">
       <% items.forEach(item => { %>
         <a class="card product-card <%= section !== '전체' ? 'featured-card' : '' %>" href="/item/<%= item.id %>">
-          <img src="<%= item.coverImage || item.image %>" alt="<%= item.title %>">
+          <img src="<%= item.coverImage || item.image %>" loading="lazy" decoding="async" alt="<%= item.title %>">
           <div class="card-body">
             <h2><%= item.title %></h2>
             <% if (section !== '전체') { %>
