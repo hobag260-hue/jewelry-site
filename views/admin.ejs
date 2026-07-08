@@ -35,6 +35,18 @@
         <input name="name" placeholder="예: 브로치, 진주, 웨딩 컬렉션" required>
         <button>카테고리 저장</button>
       </form>
+      <div class="brand-map">
+        <% store.categories.forEach(cat => { %>
+          <div>
+            <strong><%= cat %></strong>
+            <p>등록 상품 <%= store.items.filter(item => item.category === cat).length %>개</p>
+            <form action="/admin/category/delete" method="post" class="inline-form" onsubmit="return confirm('이 카테고리를 삭제할까요? 사용 중인 카테고리는 삭제되지 않습니다.')">
+              <input type="hidden" name="category" value="<%= cat %>">
+              <button type="submit" class="danger">카테고리 삭제</button>
+            </form>
+          </div>
+        <% }) %>
+      </div>
     </section>
 
     <section class="panel">
@@ -50,7 +62,19 @@
         <% store.categories.forEach(cat => { %>
           <div>
             <strong><%= cat %></strong>
-            <p><%= (store.subcategories[cat] || []).join(' · ') %></p>
+            <% const brands = store.subcategories[cat] || []; %>
+            <% if (brands.length) { %>
+              <% brands.forEach(brandName => { %>
+                <form action="/admin/subcategory/delete" method="post" class="inline-form" onsubmit="return confirm('이 브랜드를 삭제할까요? 해당 카테고리의 상품에서 사용 중이면 삭제되지 않습니다.')">
+                  <input type="hidden" name="category" value="<%= cat %>">
+                  <input type="hidden" name="brand" value="<%= brandName %>">
+                  <span><%= brandName %> (<%= store.items.filter(item => item.category === cat && item.brand === brandName).length %>)</span>
+                  <button type="submit" class="danger">브랜드 삭제</button>
+                </form>
+              <% }) %>
+            <% } else { %>
+              <p class="muted">등록된 브랜드가 없습니다.</p>
+            <% } %>
           </div>
         <% }) %>
       </div>
