@@ -89,8 +89,11 @@
     </section>
 
     <% if (totalPages > 1) { %>
+      <% const paginationWindow = 4; %>
+      <% const startPage = Math.min(page, Math.max(totalPages - paginationWindow + 1, 1)); %>
+      <% const endPage = Math.min(startPage + paginationWindow - 1, totalPages); %>
       <nav class="pagination" aria-label="상품 페이지 이동">
-        <% for (let p = 1; p <= totalPages; p += 1) { %>
+        <% for (let p = startPage; p <= endPage; p += 1) { %>
           <a
             class="pagination-link <%= p === page ? 'active' : '' %>"
             href="/?category=<%= encodeURIComponent(category) %>&brand=<%= encodeURIComponent(brand) %>&section=<%= encodeURIComponent(section) %>&q=<%= encodeURIComponent(q) %>&page=<%= p %>#category-filter"

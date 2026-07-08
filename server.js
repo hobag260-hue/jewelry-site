@@ -308,6 +308,28 @@ app.post('/admin/category', requireAdmin, (req, res) => {
   res.redirect('/admin?message=' + encodeURIComponent('카테고리가 저장되었습니다.'));
 });
 
+app.post('/admin/category/delete', requireAdmin, (req, res) => {
+  const category = String(req.body.category || '').trim();
+  const store = loadStore();
+
+  if (!category || !store.categories.includes(category)) {
+    return res.redirect('/admin?message=' + encodeURIComponent('삭제할 카테고리를 찾을 수 없습니다.'));
+  }
+
+  if (store.categories.length <= 1) {
+    return res.redirect('/admin?message=' + encodeURIComponent('마지막 카테고리는 삭제할 수 없습니다.'));
+  }
+
+  if (store.items.some(item => item.category === category)) {
+    return res.redirect('/admin?message=' + encodeURIComponent('상품에서 사용 중인 카테고리는 삭제할 수 없습니다.'));
+  }
+
+  store.categories = store.categories.filter(item => item !== category);
+  delete store.subcategories[category];
+  saveStore(store);
+  return res.redirect('/admin?message=' + encodeURIComponent('카테고리가 삭제되었습니다.'));
+});
+
 app.post('/admin/banner', requireAdmin, upload.array('banners', 6), (req, res) => {
   const store = loadStore();
   const files = Array.isArray(req.files) ? req.files : [];
@@ -336,6 +358,29 @@ app.post('/admin/subcategory', requireAdmin, (req, res) => {
   }
 
   res.redirect('/admin?message=' + encodeURIComponent('브랜드가 저장되었습니다.'));
+});
+
+app.post('/admin/subcategory/delete', requireAdmin, (req, res) => {
+  const category = String(req.body.category || '').trim();
+  const brand = String(req.body.brand || '').trim();
+  const store = loadStore();
+
+  if (!category || !brand || !store.categories.includes(category)) {
+    return res.redirect('/admin?message=' + encodeURIComponent('삭제할 브랜드 정보를 찾을 수 없습니다.'));
+  }
+
+  const brands = Array.isArray(store.subcategories[category]) ? store.subcategories[category] : [];
+  if (!brands.includes(brand)) {
+    return res.redirect('/admin?message=' + encodeURIComponent('삭제할 브랜드 정보를 찾을 수 없습니다.'));
+  }
+
+  if (store.items.some(item => item.category === category && item.brand === brand)) {
+    return res.redirect('/admin?message=' + encodeURIComponent('해당 카테고리 상품에서 사용 중인 브랜드는 삭제할 수 없습니다.'));
+  }
+
+  store.subcategories[category] = brands.filter(item => item !== brand);
+  saveStore(store);
+  return res.redirect('/admin?message=' + encodeURIComponent('브랜드가 삭제되었습니다.'));
 });
 
 app.post('/admin/live-link', requireAdmin, (req, res) => {
