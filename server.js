@@ -6,9 +6,12 @@ const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PUBLIC_DIR = path.join(__dirname, 'public');
+const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(__dirname, 'data', 'store.json');
 const SEED_FILE = path.join(__dirname, 'seed-data', 'store.json');
-const UPLOAD_DIR = path.join(__dirname, 'public', 'uploads');
+const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
+const LEGACY_UPLOAD_DIR = path.join(PUBLIC_DIR, 'uploads');
 const DEFAULT_CATEGORIES = ['목걸이', '팔찌', '귀걸이', '반지'];
 const DEFAULT_BRANDS = ['반클리프', '불가리', '까르띠에', '샤넬', '디올', '티파니', '프레드', '에르메스', '루이비통', '쇼메', '부쉐론', '크롬하츠'];
 const DEFAULT_SECTIONS = ['이벤트'];
@@ -158,6 +161,45 @@ function clearAdminCookie(res) {
   res.setHeader('Set-Cookie', `${ADMIN_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax`);
 }
 
+function getImageFileCandidates(imageUrl) {
+  if (!imageUrl || typeof imageUrl !== 'string') return [];
+  if (!imageUrl.startsWith('/public/uploads/')) {
+    return [path.join(__dirname, imageUrl.replace('/public/', 'public/'))];
+  }
+
+  const fileName = path.basename(imageUrl);
+  return [
+    path.join(UPLOAD_DIR, fileName),
+    path.join(LEGACY_UPLOAD_DIR, fileName)
+  ];
+}
+
+function deleteImageFile(imageUrl) {
+  for (const filePath of getImageFileCandidates(imageUrl)) {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      return;
+    }
+  }
+}
+
+function seedUploadsFromLegacyDir() {
+  if (!fs.existsSync(LEGACY_UPLOAD_DIR)) return;
+
+  const volumeFiles = fs.readdirSync(UPLOAD_DIR);
+  if (volumeFiles.length > 0) return;
+
+  for (const entry of fs.readdirSync(LEGACY_UPLOAD_DIR, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+
+    const sourcePath = path.join(LEGACY_UPLOAD_DIR, entry.name);
+    const targetPath = path.join(UPLOAD_DIR, entry.name);
+    if (!fs.existsSync(targetPath)) {
+      fs.copyFileSync(sourcePath, targetPath);
+    }
+  }
+}
+
 function requireAdmin(req, res, next) {
   if (isAdminAuthenticated(req)) return next();
   const nextPath = req.originalUrl && req.originalUrl !== '/admin/login' ? req.originalUrl : '/admin';
@@ -165,6 +207,8 @@ function requireAdmin(req, res, next) {
 }
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+fs.mkdirSync(LEGACY_UPLOAD_DIR, { recursive: true });
+seedUploadsFromLegacyDir();
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
@@ -186,7 +230,9 @@ const upload = multer({
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
-app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/public/uploads', express.static(UPLOAD_DIR));
+app.use('/public/uploads', express.static(LEGACY_UPLOAD_DIR));
+app.use('/public', express.static(PUBLIC_DIR));
 
 app.get('/', (req, res) => {
   const store = loadStore();
@@ -335,8 +381,7 @@ app.post('/admin/banner', requireAdmin, upload.array('banners', 6), (req, res) =
   const files = Array.isArray(req.files) ? req.files : [];
   if (files.length) {
     for (const banner of store.banners || []) {
-      const imagePath = path.join(__dirname, banner.replace('/public/', 'public/'));
-      if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+      deleteImageFile(banner);
     }
     store.banners = files.slice(0, 6).map(file => `/public/uploads/${file.filename}`);
     saveStore(store);
@@ -416,10 +461,7 @@ app.post('/admin/edit/:id', requireAdmin, upload.any(), (req, res) => {
 
   if (coverFile) {
     const oldCover = item.coverImage || item.image;
-    if (oldCover) {
-      const oldCoverPath = path.join(__dirname, oldCover.replace('/public/', 'public/'));
-      if (fs.existsSync(oldCoverPath)) fs.unlinkSync(oldCoverPath);
-    }
+    deleteImageFile(oldCover);
     item.coverImage = `/public/uploads/${coverFile.filename}`;
     item.image = item.coverImage;
   }
@@ -456,8 +498,7 @@ app.post('/admin/edit/:id/delete-detail', requireAdmin, (req, res) => {
   const image = String(req.body.image || '').trim();
   if (item && image) {
     item.detailImages = (item.detailImages || []).filter(detailImage => detailImage !== image);
-    const imagePath = path.join(__dirname, image.replace('/public/', 'public/'));
-    if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+    deleteImageFile(image);
     saveStore(store);
   }
   res.redirect('/admin/edit/' + req.params.id + '?message=' + encodeURIComponent('상세 이미지가 삭제되었습니다.'));
@@ -507,8 +548,7 @@ app.post('/admin/delete/:id', requireAdmin, (req, res) => {
   saveStore(store);
   const imagesToDelete = [item?.coverImage || item?.image, ...(item?.detailImages || [])].filter(Boolean);
   for (const image of imagesToDelete) {
-    const imagePath = path.join(__dirname, image.replace('/public/', 'public/'));
-    if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+    deleteImageFile(image);
   }
   res.redirect('/admin?message=' + encodeURIComponent('삭제되었습니다.'));
 });
