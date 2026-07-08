@@ -186,9 +186,6 @@ function deleteImageFile(imageUrl) {
 function seedUploadsFromLegacyDir() {
   if (!fs.existsSync(LEGACY_UPLOAD_DIR)) return;
 
-  const volumeFiles = fs.readdirSync(UPLOAD_DIR);
-  if (volumeFiles.length > 0) return;
-
   for (const entry of fs.readdirSync(LEGACY_UPLOAD_DIR, { withFileTypes: true })) {
     if (!entry.isFile()) continue;
 
